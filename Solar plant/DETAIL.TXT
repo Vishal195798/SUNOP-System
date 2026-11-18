@@ -1,0 +1,394 @@
+SUNOP - SOLAR UNIFIED NETWORK OPERATION PLATFORM
+PROJECT DETAIL REPORT
+
+1. PROJECT OVERVIEW
+Name: SUNOP
+Full Name: Solar Unified Network Operation Platform
+Purpose: Monitor, manage, and report on solar plant operations through a centralized web dashboard.
+Application Type: Full-stack web application
+Architecture: Browser-based frontend and Spring Boot REST backend connected to a MySQL database
+Primary Backend URL: http://localhost:8080
+Frontend Entry Pages:
+- login.html - Admin login page
+- step.html - Main operational dashboard
+
+2. TECHNOLOGY STACK
+Frontend:
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Browser Canvas API for charts
+- Browser Local Storage for login session values
+
+Backend:
+- Java 17
+- Spring Boot 4.1.1
+- Spring Web MVC
+- Spring Data JPA
+- Hibernate/Jakarta Persistence
+- Gradle Wrapper
+- RESTful JSON APIs
+- CORS enabled on controllers
+
+Database:
+- MySQL
+- MySQL Connector/J
+- Database name: sunop
+- Host: localhost
+- Port: 3306
+
+3. PROJECT DIRECTORY STRUCTURE
+Root frontend files:
+- login.html - Login and direct admin access interface
+- login.js - Login form handling and session management
+- step.html - Dashboard, plant, monitoring, report, alert, and settings sections
+- script.js - Frontend API calls and dashboard behavior
+- style.css - Shared frontend styling
+- DETAIL.TXT - This project report
+
+Backend folders:
+- solar-backend/build.gradle - Gradle dependencies and Java configuration
+- solar-backend/settings.gradle - Gradle project settings
+- solar-backend/gradlew - Linux/macOS Gradle wrapper launcher
+- solar-backend/gradlew.bat - Windows Gradle wrapper launcher
+- solar-backend/src/main/java/com/solarplanate/solar_backend/ - Java source code
+- solar-backend/src/main/resources/application.properties - Database configuration
+- solar-backend/src/test/java/com/solarplanate/solar_backend/ - Backend tests
+- solar-backend/build/ - Generated build and test artifacts
+
+4. MAIN JAVA CLASSES
+SolarBackendApplication.java:
+- Starts the Spring Boot application
+- Main entry point for the backend server
+
+LoginController.java:
+- Provides the admin login API
+- Compares submitted credentials with demo admin credentials
+- Returns success, username, role, and message in JSON
+
+SolarController.java:
+- Retrieves and inserts solar readings
+- Calculates today, weekly, monthly, and plant-wise energy reports
+- Generates current alerts and alert history
+- Supplies settings information from the latest solar reading
+
+SolarPlantController.java:
+- Retrieves all configured solar plants
+
+SolarData.java:
+- JPA entity mapped to the solar_data table
+- Stores readings, plant metadata, and timestamps
+
+SolarPlant.java:
+- JPA entity mapped to the solar_plants table
+- Stores plant name, location, capacity, panel count, and status
+
+SolarDataRepository.java:
+- Extends JpaRepository
+- Retrieves the latest record
+- Executes native MySQL queries for daily, weekly, monthly, and plant-wise totals
+
+SolarPlantRepository.java:
+- Extends JpaRepository
+- Provides CRUD access to solar plant records
+
+5. DATABASE CONFIGURATION
+Spring datasource URL:
+jdbc:mysql://localhost:3306/sunop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000
+
+Datasource username:
+root
+
+Datasource password:
+Configured in solar-backend/src/main/resources/application.properties.
+The report omits the actual password to avoid exposing a database credential.
+
+Expected database tables:
+- solar_data
+- solar_plants
+
+6. SOLAR_DATA ENTITY
+Table: solar_data
+Fields:
+- id: Auto-generated primary key
+- voltage: Double voltage reading
+- current: Double current reading
+- power: Double power reading
+- temperature: Double panel temperature
+- energy_today: Daily energy value
+- status: Operational status text
+- plant_name: Name of the associated plant
+- location: Physical location of the plant
+- capacity: Plant capacity
+- total_panels: Number of panels
+- plant_id: Optional integer identifier linking readings to a plant
+- created_at: Reading creation timestamp
+
+7. SOLAR_PLANTS ENTITY
+Table: solar_plants
+Fields:
+- id: Auto-generated primary key
+- plant_name: Plant name
+- location: Plant location
+- capacity: Plant capacity
+- total_panels: Number of solar panels
+- status: Plant status
+
+8. ADMIN LOGIN
+Demo backend credentials:
+- Username: admin
+- Password: admin123
+
+Login endpoint:
+POST http://localhost:8080/login
+
+Example request body:
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+Login success response fields:
+- success: true
+- message: Login successful
+- username: admin
+- role: ADMIN
+
+Session values stored in browser Local Storage:
+- sunopLoggedIn = true
+- sunopUsername = admin or logged-in username
+- sunopRole = ADMIN
+
+Direct Admin Access:
+The Admin Access button on login.html bypasses credential entry for this demo application. It stores the admin session values and immediately opens step.html.
+
+Important security limitation:
+The application currently uses demo credentials and client-side session checks. It does not use server-side sessions, JWT authentication, password hashing, or protected backend routes. This login should not be treated as production security.
+
+9. FRONTEND MODULES
+Admin login:
+- Username and password validation
+- Minimum password length validation
+- Login API request
+- Direct Admin Access button
+- Logout session clearing
+- Redirect to step.html after login
+
+Solar dashboard:
+- Latest power, energy, and temperature values
+- Quick display of operating status
+- Navigation to dashboard sections
+
+Solar plants:
+- Displays all plants returned by /plants
+- Plant name, location, capacity, panel count, and status
+
+Live monitoring:
+- Voltage
+- Current
+- Power
+- Temperature
+- Energy today
+- Live power canvas chart
+
+Energy reports:
+- Today energy
+- Weekly energy
+- Monthly energy
+- Daily energy history
+- Plant-wise daily energy history
+- Daily energy canvas chart
+- Selected plant energy canvas chart
+
+Alerts:
+- Current alerts based on the latest solar reading
+- Alert history for readings that are not normal
+- Temperature warning above 70 degrees Celsius
+- Temperature critical alert above 80 degrees Celsius
+- Normal status message when no warning or critical condition is generated
+
+Settings:
+- Latest plant name
+- Location
+- Capacity
+- Total panels
+- Backend status
+- Solar API status
+- Plants API status
+- Database status
+- Project and technology details
+- Refresh settings control
+
+10. REST API ENDPOINTS
+Authentication:
+- POST /login - Validates demo admin credentials
+
+Solar readings:
+- GET /solar - Returns all solar records
+- GET /solar/latest - Returns the newest solar record
+- POST /solar - Inserts a solar record
+
+Reports:
+- GET /reports - Returns today, weekly, and monthly energy totals
+- GET /reports/daily - Returns daily aggregate energy history
+- GET /reports/plant/{plantId} - Returns daily history for a selected plant
+
+Alerts:
+- GET /alerts - Returns alerts generated from the latest reading
+- GET /alerts/history - Returns historical non-normal alerts
+
+Plants:
+- GET /plants - Returns all configured solar plants
+
+Settings:
+- GET /settings - Returns the latest plant and system settings values
+
+All controllers use @CrossOrigin, allowing browser cross-origin access during local development.
+
+11. BACKEND REPORT LOGIC
+Today energy:
+- Uses the maximum energy_today for each plant on the current date
+- Sums the plant totals
+
+Weekly energy:
+- Uses records from the current date through the previous six days
+- Produces a rolling seven-day result
+
+Monthly energy:
+- Uses records from the current date through the previous 29 days
+- Produces a rolling 30-day result
+
+Daily energy history:
+- Groups readings by date and plant
+- Uses the maximum energy_today for each plant per date
+- Sums plant totals per date
+
+Plant-wise history:
+- Filters by plant_id
+- Groups readings by date
+- Uses the maximum energy_today for that plant per date
+
+12. FRONTEND-BACKEND COMMUNICATION
+JavaScript calls the backend using Fetch API requests to:
+- http://localhost:8080/solar/latest
+- http://localhost:8080/plants
+- http://localhost:8080/reports
+- http://localhost:8080/reports/daily
+- http://localhost:8080/reports/plant/{plantId}
+- http://localhost:8080/alerts
+- http://localhost:8080/alerts/history
+- http://localhost:8080/settings
+- http://localhost:8080/login
+
+13. BUILD CONFIGURATION
+build.gradle features:
+- Java plugin
+- Spring Boot Gradle plugin 4.1.1
+- Spring dependency management plugin 1.1.7
+- Java 17 toolchain
+- Maven Central dependencies
+- Spring Web MVC starter
+- MySQL JDBC connector
+- Spring Data JPA
+- JUnit platform test dependencies
+
+Test configuration:
+- One Spring Boot context-loading test named SolarBackendApplicationTests
+- Test scope includes Spring Boot web MVC test support
+
+14. RUNNING THE PROJECT
+Start MySQL:
+1. Start the MySQL server on localhost port 3306.
+2. Create or select a database named sunop.
+3. Ensure the solar_data and solar_plants tables exist with matching columns.
+
+Configure the backend:
+- Update solar-backend/src/main/resources/application.properties if database credentials differ.
+
+Start the backend on Windows:
+cd "c:\Users\visha\Desktop\SUNOP_FINAL_TEST\Solar plant\solar-backend"
+.\gradlew.bat bootRun
+
+The backend normally runs on:
+http://localhost:8080
+
+Run the frontend:
+- Open login.html directly in a browser, or
+- Serve the project root with a local web server.
+
+Example local frontend server command:
+cd "c:\Users\visha\Desktop\SUNOP_FINAL_TEST\Solar plant"
+python -m http.server 5500
+
+Then open:
+http://localhost:5500/login.html
+
+15. BUILD AND TEST COMMANDS
+Windows build:
+.\gradlew.bat build
+
+Windows tests:
+.\gradlew.bat test
+
+Windows application launch:
+.\gradlew.bat bootRun
+
+Windows create executable JAR:
+.\gradlew.bat bootJar
+
+JavaScript syntax check:
+node --check login.js
+node --check script.js
+
+16. CURRENT IMPLEMENTATION STATUS
+Implemented:
+- Login page
+- Direct admin access
+- Backend credential login endpoint
+- Dashboard navigation
+- Latest solar reading display
+- Plant listing
+- Live monitoring display
+- Daily and plant-wise reports
+- Temperature alerts
+- Alert history
+- Settings display
+- Logout behavior
+- Session protection for step.html
+
+Areas for production improvement:
+- Replace demo login with database-backed users and hashed passwords
+- Add server-side authorization for API endpoints
+- Replace browser-only local session checks with JWT or server sessions
+- Validate and sanitize POST request data
+- Externalize database credentials with environment variables or secrets
+- Add database migration scripts
+- Add frontend and backend unit tests
+- Add charts and API error handling coverage
+- Add proper health and database status checks
+- Add HTTPS support
+- Implement role-based access control
+
+17. PROJECT WORKFLOW SUMMARY
+1. The user opens login.html.
+2. The user enters admin credentials or clicks Admin Access.
+3. The login JavaScript stores the SUNOP session values in Local Storage.
+4. The browser redirects to step.html.
+5. step.html verifies sunopLoggedIn and redirects to login.html if absent.
+6. The frontend calls Spring Boot REST APIs.
+7. Spring Boot reads or writes MySQL records through JPA repositories.
+8. The dashboard displays current readings, plant data, reports, alerts, and settings.
+9. Logout removes Local Storage session values and returns to login.html.
+
+18. PROJECT PURPOSE FOR REPORT GENERATION
+This document can be used as the source for:
+- Final-year project report
+- Software requirement specification
+- System architecture section
+- Module description
+- API documentation
+- Database description
+- Setup guide
+- Testing section
+- Limitations and future scope
+- Viva/technical presentation notes
